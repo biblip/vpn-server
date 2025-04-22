@@ -76,6 +76,7 @@ persist-tun
 status openvpn-status.log
 verb 3
 explicit-exit-notify 1
+management 127.0.0.1 7505
 EOF
 
 # === Enable IP Forwarding ===
