@@ -15,7 +15,7 @@ LAN_PROBE_IP="10.0.0.1"
 LAN_INTERFACE=$(ip route get "$LAN_PROBE_IP" | awk '{for(i=1;i<=NF;i++){if($i=="dev"){print $(i+1); exit}}}')
 
 if [ -z "$LAN_INTERFACE" ]; then
-  echo "❌ Could not detect LAN interface. Please set LAN_INTERFACE manually."
+  echo " Could not detect LAN interface. Please set LAN_INTERFACE manually."
   exit 1
 fi
 
