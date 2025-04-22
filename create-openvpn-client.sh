@@ -1,12 +1,46 @@
 #!/bin/bash
 set -e
 
-CLIENT_NAME="$1"
-CAPABILITY="$2" # Optional: --internet
+# === Input ===
+SERVER_DOMAIN="$1"
+CLIENT_NAME="$2"
+CAPABILITY="$3" # Optional: --internet
 
-if [ -z "$CLIENT_NAME" ]; then
-  echo "Usage: $0 <client-name> [--internet]"
+# === Usage Function ===
+function usage() {
+  echo "------------------------------------------------------------"
+  echo "Usage: $0 <server-domain-or-ip> <client-name> [--internet]"
+  echo
+  echo "Arguments:"
+  echo "  server-domain-or-ip   The domain or IP of your VPN server"
+  echo "  client-name           Name for the client (no spaces)"
+  echo "  --internet            (Optional) Route all traffic through VPN"
+  echo
+  echo "Examples:"
+  echo "  $0 vpn.example.com alice"
+  echo "  $0 10.0.200.226 bob --internet"
+  echo "------------------------------------------------------------"
   exit 1
+}
+
+# === Validate Inputs ===
+if [ -z "$SERVER_DOMAIN" ] || [ -z "$CLIENT_NAME" ]; then
+  echo "  Error: Missing required arguments."
+  usage
+fi
+
+# === Validate Optional Flag ===
+if [ -n "$CAPABILITY" ] && [ "$CAPABILITY" != "--internet" ]; then
+  echo "  Error: Unknown flag '$CAPABILITY'"
+  usage
+fi
+
+echo "  Server: $SERVER_DOMAIN"
+echo "  Client: $CLIENT_NAME"
+if [ "$CAPABILITY" == "--internet" ]; then
+  echo "  Capability: Full internet routing enabled"
+else
+  echo "  Capability: LAN-only access"
 fi
 
 EASYRSA_DIR=~/openvpn-ca
@@ -23,15 +57,12 @@ cp "pki/private/$CLIENT_NAME.key" "$OUTPUT_DIR/"
 cp "pki/issued/$CLIENT_NAME.crt" "$OUTPUT_DIR/"
 cp "pki/ca.crt" "$OUTPUT_DIR/"
 
-# === Get public IP ===
-SERVER_IP=$(curl -s ifconfig.me)
-
 # === Create client config ===
 cat > "$OUTPUT_DIR/$CLIENT_NAME.ovpn" <<EOF
 client
 dev tun
 proto udp
-remote $SERVER_IP 1194
+remote $SERVER_DOMAIN 1194
 resolv-retry infinite
 nobind
 persist-key
